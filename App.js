@@ -1,5 +1,6 @@
 import React, { Component, createRef } from 'react';
 import {
+  StyleSheet,
   Text,
   View,
   ActivityIndicator,
@@ -9,7 +10,41 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import axios from "axios";
+
+const styles = StyleSheet.create({
+  leftAction: {
+    backgroundColor: 'blue',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  actionText: {
+    color: 'white',
+    fontWeight: '600',
+    padding: 20,
+  },
+  popupContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});
+
+const LeftActions = () => {
+  return (
+    <View style={styles.leftAction}>
+      <Text style={styles.actionText}>
+        Open User Info
+      </Text>
+    </View>
+  );
+};
 
 export default class App extends Component {
   constructor(props) {
@@ -23,6 +58,7 @@ export default class App extends Component {
       data: [],
       error: '',
       showScrollTopBtn: false,
+      isPopupVisible: true,
     };
   }
 
@@ -97,7 +133,7 @@ export default class App extends Component {
   }
 
   render() {
-    const { loading, page, data, isRefreshing, showScrollTopBtn } = this.state;
+    const { loading, page, data, isRefreshing, showScrollTopBtn, isPopupVisible } = this.state;
 
     if (loading && page === 1) {
       return (
@@ -140,31 +176,41 @@ export default class App extends Component {
             />
           }
           renderItem={({ item }) => (
-            <View
-              style={{
-                flexDirection: 'row',
-                padding: 15,
-                alignItems: 'center',
+            <Swipeable
+              renderLeftActions={LeftActions}
+              onSwipeableLeftOpen={() => {
+                this.setState({
+                  isPopupVisible: true,
+                });
               }}
             >
-              <Image
-                source={{ uri: item.profile_image }}
+              <View
                 style={{
-                  height: 50,
-                  width: 50,
-                  marginRight: 10,
-                }}
-              />
-              <Text
-                style={{
-                  fontSize: 18,
+                  flexDirection: 'row',
+                  padding: 15,
                   alignItems: 'center',
-                  color: '#65A7C5',
+                  backgroundColor: 'white',
                 }}
               >
-                {item.display_name}
-              </Text>
-            </View>
+                <Image
+                  source={{ uri: item.profile_image }}
+                  style={{
+                    height: 50,
+                    width: 50,
+                    marginRight: 10,
+                  }}
+                />
+                <Text
+                  style={{
+                    fontSize: 18,
+                    alignItems: 'center',
+                    color: '#65A7C5',
+                  }}
+                >
+                  {item.display_name}
+                </Text>
+              </View>
+            </Swipeable>
           )}
           keyExtractor={(item, index) => index.toString()}
           ItemSeparatorComponent={this.renderSeparator}
@@ -187,6 +233,27 @@ export default class App extends Component {
             >
               <Text>Scroll to Top</Text>
             </TouchableOpacity>
+          : null
+        }
+        {
+          isPopupVisible ?
+            <SafeAreaView
+              style={styles.popupContainer}
+            >
+              <TouchableOpacity
+                style={{
+                  position: 'absolute',
+                  top: '10%',
+                  right: '10%',
+                }}
+                onPress={() => {
+                  this.setState({ isPopupVisible: false })
+                }}
+              >
+                <Text style={{fontSize: 42}}>X</Text>
+              </TouchableOpacity>
+              <Text>aaaaa</Text>
+            </SafeAreaView>
           : null
         }
       </SafeAreaView>
